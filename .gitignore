@@ -1,0 +1,44 @@
+﻿# Environment & Secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+
+# Documentation & Context Files (Ignore to prevent accidental commit)
+ARCHITECTURE.md
+DEVELOPMENT_CONTRACTS.md
+project_prompts_fullstack.md
+WORK_PLAN_AND_TASKS.md
+CLAUDE.md
+claude_knowledge_context.xml
+
+# Keep project README
+!README.md
+
+# Node / Backend
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+
+# Android / Gradle
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+local.properties
+.cxx/
+captures/
+*.hprof
+
+# IDEs & System
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
