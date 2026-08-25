@@ -27,7 +27,7 @@
 //   PATCH  /api/doctors/ratings/:ratingId        [patient - owner, 24h window]
 // =====================================================================
 import { Router } from 'express';
-import { authenticate, authorize } from '../../middleware/auth'; // Shared Infra (owned by M1)
+import { authenticate, authorize } from '../../middlewares/auth.middleware'; // Shared Infra (owned by M1)
 import { verifyInternalService } from './middlewares/internalService.middleware';
 
 import * as departmentController from './controllers/department.controller';
