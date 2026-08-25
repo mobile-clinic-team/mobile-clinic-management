@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { AnyZodObject, ZodError } from 'zod';
+import { ZodTypeAny, ZodError } from 'zod';
 import { AppError } from '../utils/AppError';
 
 type RequestPart = 'body' | 'query' | 'params';
@@ -11,7 +11,7 @@ type RequestPart = 'body' | 'query' | 'params';
  *
  * Usage: router.post('/register', validate(registerSchema), controller.register)
  */
-export function validate(schema: AnyZodObject, part: RequestPart = 'body') {
+export function validate(schema: ZodTypeAny, part: RequestPart = 'body') {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = schema.parse(req[part]);

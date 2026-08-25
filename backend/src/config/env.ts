@@ -24,4 +24,12 @@ export const env = {
   },
 
   bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS ?? '12', 10),
+
+  // M3 - Clinical Files: Amazon S3 storage (per ARCHITECTURE.md #3.6)
+  s3: {
+    region: process.env.AWS_REGION ?? 'ap-southeast-1',
+    bucket: required('AWS_S3_BUCKET', 'mobile-clinic-clinical-files'),
+    accessKeyId: required('AWS_ACCESS_KEY_ID', 'dev-key-not-set'),
+    secretAccessKey: required('AWS_SECRET_ACCESS_KEY', 'dev-secret-not-set'),
+  },
 };
