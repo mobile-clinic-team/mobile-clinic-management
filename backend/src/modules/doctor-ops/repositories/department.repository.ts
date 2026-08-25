@@ -79,6 +79,6 @@ export class DepartmentRepository {
   /** Returns true if deleted, false if not found. Throws on FK violation (23503). */
   async delete(id: number): Promise<boolean> {
     const { rowCount } = await this.db.query(`DELETE FROM departments WHERE id = $1`, [id]);
-    return rowCount > 0;
+    return (rowCount ?? 0) > 0;
   }
 }

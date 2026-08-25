@@ -9,8 +9,13 @@ import { AppError } from '../../../utils/AppError';
 import { ShiftService } from '../services/shift.service';
 import { createShiftSchema, listShiftsQuerySchema } from '../dtos/shift.dto';
 
-interface AuthedRequest extends Request {
-  user: { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string };
+function getAuthedUser(req: Request): { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string } {
+  if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
+  return {
+    userId: req.user.sub ?? (req.user as any).userId,
+    role: req.user.role,
+    email: (req.user as any).email ?? '',
+  };
 }
 
 const service = new ShiftService();
@@ -29,7 +34,7 @@ export const listShiftsForDoctor = asyncHandler(async (req: Request, res: Respon
 });
 
 export const registerOwnShift = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   if (user.role !== 'doctor') {
     throw new AppError(403, 'FORBIDDEN', 'Only accounts with role=doctor may register shifts');
   }
@@ -44,7 +49,7 @@ export const registerOwnShift = asyncHandler(async (req: Request, res: Response)
 });
 
 export const cancelOwnShift = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   const shiftId = Number(req.params.shiftId);
   if (!Number.isInteger(shiftId)) throw new AppError(400, 'INVALID_ID', 'shiftId must be an integer');
 

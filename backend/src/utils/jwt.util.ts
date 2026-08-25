@@ -21,9 +21,9 @@ export function generateRefreshToken(payload: JwtPayload): string {
 }
 
 export function verifyAccessToken(token: string): JwtPayload {
-  return jwt.verify(token, env.jwt.accessSecret) as JwtPayload;
+  return jwt.verify(token, env.jwt.accessSecret) as unknown as JwtPayload;
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {
-  return jwt.verify(token, env.jwt.refreshSecret) as JwtPayload;
+  return jwt.verify(token, env.jwt.refreshSecret) as unknown as JwtPayload;
 }

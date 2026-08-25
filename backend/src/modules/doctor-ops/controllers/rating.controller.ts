@@ -9,8 +9,13 @@ import { AppError } from '../../../utils/AppError';
 import { RatingService } from '../services/rating.service';
 import { createRatingSchema, listRatingsQuerySchema, updateRatingSchema } from '../dtos/rating.dto';
 
-interface AuthedRequest extends Request {
-  user: { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string };
+function getAuthedUser(req: Request): { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string } {
+  if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
+  return {
+    userId: req.user.sub ?? (req.user as any).userId,
+    role: req.user.role,
+    email: (req.user as any).email ?? '',
+  };
 }
 
 const service = new RatingService();
@@ -20,7 +25,7 @@ function authHeader(req: Request): string {
 }
 
 export const submitRating = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   const doctorId = Number(req.params.id);
   if (!Number.isInteger(doctorId)) throw new AppError(400, 'INVALID_ID', 'id must be an integer');
 
@@ -38,7 +43,7 @@ export const submitRating = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateRating = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   const ratingId = Number(req.params.ratingId);
   if (!Number.isInteger(ratingId)) throw new AppError(400, 'INVALID_ID', 'ratingId must be an integer');
 

@@ -13,10 +13,13 @@ import {
   updateDoctorProfileSchema,
 } from '../dtos/doctor.dto';
 
-// `authenticate` (Shared Infra, owned by M1) is expected to populate
-// req.user = { userId, role, email } per DEVELOPMENT_CONTRACTS.md #6.
-interface AuthedRequest extends Request {
-  user: { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string };
+function getAuthedUser(req: Request): { userId: number; role: 'patient' | 'doctor' | 'admin'; email: string } {
+  if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
+  return {
+    userId: req.user.sub ?? (req.user as any).userId,
+    role: req.user.role,
+    email: (req.user as any).email ?? '',
+  };
 }
 
 const service = new DoctorService();
@@ -42,7 +45,7 @@ export const getDoctor = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const createOwnDoctorProfile = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   if (user.role !== 'doctor') {
     throw new AppError(403, 'FORBIDDEN', 'Only accounts with role=doctor may create a doctor profile');
   }
@@ -57,7 +60,7 @@ export const createOwnDoctorProfile = asyncHandler(async (req: Request, res: Res
 });
 
 export const updateDoctor = asyncHandler(async (req: Request, res: Response) => {
-  const { user } = req as AuthedRequest;
+  const user = getAuthedUser(req);
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) throw new AppError(400, 'INVALID_ID', 'id must be an integer');
 

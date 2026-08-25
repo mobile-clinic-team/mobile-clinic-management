@@ -109,7 +109,7 @@ export class DoctorRepository {
   /** Returns true if deleted. Throws on FK violation (23503) e.g. active shifts/appointments. */
   async delete(id: number): Promise<boolean> {
     const { rowCount } = await this.db.query(`DELETE FROM doctors WHERE id = $1`, [id]);
-    return rowCount > 0;
+    return (rowCount ?? 0) > 0;
   }
 
   /**

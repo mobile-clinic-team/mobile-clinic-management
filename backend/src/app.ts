@@ -4,6 +4,7 @@ import cors from 'cors';
 import { patientIdentityRouter } from './modules/patient-identity/patient-identity.routes';
 import { appointmentRouter } from './modules/appointment/appointment.routes';
 import doctorOpsRouter from './modules/doctor-ops/doctor-ops.routes';
+import { clinicalFilesRouter } from './modules/clinical-files/clinical-files.routes';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.middleware';
 
 export function createApp() {
@@ -22,8 +23,8 @@ export function createApp() {
   // --- M4: Doctor Operations & Master Data --------------------------
   app.use('/api', doctorOpsRouter);
 
-  // --- Other modules mount here (kept separate, no cross-imports) ---
-  // app.use('/api', clinicalFilesRouter);     // M3
+  // --- M3: Clinical Data & Secure Files ----------------------------
+  app.use('/api', clinicalFilesRouter);
 
   // 404 + centralized error handler must be registered last, in order.
   app.use(notFoundHandler);
