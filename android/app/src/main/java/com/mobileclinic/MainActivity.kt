@@ -14,19 +14,27 @@ import com.mobileclinic.core.designsystem.MobileClinicTheme
 import com.mobileclinic.feature.aibilling.presentation.chat.AiChatScreen
 import com.mobileclinic.feature.aibilling.presentation.invoice.InvoiceDetailScreen
 import com.mobileclinic.feature.aibilling.presentation.invoice.InvoiceListScreen
+import com.mobileclinic.feature.appointment.presentation.booking.AppointmentBookingScreen
+import com.mobileclinic.feature.appointment.presentation.detail.AppointmentDetailScreen
+import com.mobileclinic.feature.appointment.presentation.list.AppointmentListScreen
+import com.mobileclinic.feature.clinical.presentation.detail.PatientMedicalRecordDetailScreen
 import com.mobileclinic.feature.doctorops.presentation.doctorlist.DoctorListScreen
+import com.mobileclinic.feature.doctorops.presentation.rating.RatingSubmissionScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Single-Activity host for all Compose destinations.
+ * Single-Activity host for all Compose destinations across 4 modules.
  *
- * Route map:
- *   "chat"                          → AiChatScreen (M1)
- *   "invoices"                      → InvoiceListScreen (M1)
- *   "invoice/{invoiceId}"           → InvoiceDetailScreen (M1)
- *   "doctors"                       → DoctorListScreen (M4)
- *   "appointment/booking"           → M2 BookingScreen (stub — wired when M2 merges)
- *     ?doctorId={Long}
+ * Route contracts:
+ *   "chat"                                               -> AiChatScreen (M1)
+ *   "invoices"                                           -> InvoiceListScreen (M1)
+ *   "invoice/{invoiceId}"                                -> InvoiceDetailScreen (M1)
+ *   "doctors"                                            -> DoctorListScreen (M4)
+ *   "appointment/booking?doctorId={doctorId}"            -> AppointmentBookingScreen (M2)
+ *   "appointments"                                       -> AppointmentListScreen (M2)
+ *   "appointment/{appointmentId}"                        -> AppointmentDetailScreen (M2)
+ *   "clinical/record/{appointmentId}"                    -> PatientMedicalRecordDetailScreen (M3)
+ *   "doctorops/rating/{appointmentId}?doctorId={doctorId}" -> RatingSubmissionScreen (M4)
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -41,7 +49,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = "chat",
                     ) {
-                        // ── M1: AI Chat ───────────────────────────────────────
+                        // ── M1: AI Chat Assistant ─────────────────────────────
                         composable("chat") {
                             AiChatScreen(
                                 onBookDoctor = { doctorId ->
@@ -51,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // ── M1: Invoice List ──────────────────────────────────
+                        // ── M1: Invoices ──────────────────────────────────────
                         composable("invoices") {
                             InvoiceListScreen(
                                 onNavigateToDetail = { id ->
@@ -60,7 +68,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // ── M1: Invoice Detail ────────────────────────────────
                         composable(
                             route = "invoice/{invoiceId}",
                             arguments = listOf(navArgument("invoiceId") { type = NavType.LongType }),
@@ -72,20 +79,19 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // ── M4: Doctor List ───────────────────────────────────
+                        // ── M4: Doctor Operations ─────────────────────────────
                         composable("doctors") {
                             DoctorListScreen(
                                 onBookAppointment = { doctorId ->
                                     navController.navigate("appointment/booking?doctorId=$doctorId")
                                 },
-                                onRateDoctor = { /* navigate to rating screen */ },
+                                onRateDoctor = { doctorId ->
+                                    navController.navigate("doctorops/rating/0?doctorId=$doctorId")
+                                },
                             )
                         }
 
-                        // ── M2: Appointment Booking (URI deep-link stub) ───────
-                        // Activated when M2 feature/mod2-appointment merges into main.
-                        // The URI "appointment/booking?doctorId={doctorId}" is the
-                        // contract between M1 AI chat and M2 booking flow.
+                        // ── M2: Appointment Booking ───────────────────────────
                         composable(
                             route = "appointment/booking?doctorId={doctorId}",
                             arguments = listOf(
@@ -96,8 +102,75 @@ class MainActivity : ComponentActivity() {
                             ),
                         ) { backStack ->
                             val doctorId = backStack.arguments?.getLong("doctorId") ?: -1L
-                            // TODO(M2): Replace with real BookingScreen(doctorId)
-                            androidx.compose.material3.Text("Booking stub — doctorId=$doctorId")
+                            AppointmentBookingScreen(
+                                doctorId = doctorId,
+                                onBookingSuccess = { _ ->
+                                    navController.navigate("appointments") {
+                                        popUpTo("appointment/booking?doctorId={doctorId}") { inclusive = true }
+                                    }
+                                },
+                                onNavigateBack = { navController.popBackStack() },
+                            )
+                        }
+
+                        // ── M2: Appointment History List ──────────────────────
+                        composable("appointments") {
+                            AppointmentListScreen(
+                                onNavigateToDetail = { appointmentId ->
+                                    navController.navigate("appointment/$appointmentId")
+                                },
+                                onBookNewClick = {
+                                    navController.navigate("doctors")
+                                },
+                            )
+                        }
+
+                        // ── M2: Appointment Detail ────────────────────────────
+                        composable(
+                            route = "appointment/{appointmentId}",
+                            arguments = listOf(navArgument("appointmentId") { type = NavType.LongType }),
+                        ) { backStack ->
+                            val appointmentId = backStack.arguments?.getLong("appointmentId") ?: return@composable
+                            AppointmentDetailScreen(
+                                appointmentId = appointmentId,
+                                onViewMedicalRecord = { apptId ->
+                                    navController.navigate("clinical/record/$apptId")
+                                },
+                                onRateDoctor = { apptId, docId ->
+                                    navController.navigate("doctorops/rating/$apptId?doctorId=$docId")
+                                },
+                                onNavigateBack = { navController.popBackStack() },
+                            )
+                        }
+
+                        // ── M3: Clinical EMR Detail ───────────────────────────
+                        composable(
+                            route = "clinical/record/{appointmentId}",
+                            arguments = listOf(navArgument("appointmentId") { type = NavType.LongType }),
+                        ) { backStack ->
+                            val recordId = backStack.arguments?.getLong("appointmentId") ?: return@composable
+                            PatientMedicalRecordDetailScreen(
+                                recordId = recordId,
+                                onNavigateBack = { navController.popBackStack() },
+                            )
+                        }
+
+                        // ── M4: Doctor Rating Submission ──────────────────────
+                        composable(
+                            route = "doctorops/rating/{appointmentId}?doctorId={doctorId}",
+                            arguments = listOf(
+                                navArgument("appointmentId") { type = NavType.LongType; defaultValue = 0L },
+                                navArgument("doctorId") { type = NavType.LongType; defaultValue = 0L },
+                            ),
+                        ) { backStack ->
+                            val doctorId = backStack.arguments?.getLong("doctorId") ?: 0L
+                            val appointmentId = backStack.arguments?.getLong("appointmentId") ?: 0L
+                            RatingSubmissionScreen(
+                                doctorId = doctorId,
+                                appointmentId = appointmentId,
+                                onRatingSubmitted = { navController.popBackStack() },
+                                onNavigateBack = { navController.popBackStack() },
+                            )
                         }
                     }
                 }
