@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -66,7 +69,8 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
 
     // Hilt — Dependency Injection
-    implementation("com.google.dagger:hilt-android:2.51")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Lifecycle ViewModel Compose
@@ -75,4 +79,8 @@ dependencies {
 
     // Encrypted SharedPreferences for JWT security
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+}
+
+kapt {
+    correctErrorTypes = true
 }
