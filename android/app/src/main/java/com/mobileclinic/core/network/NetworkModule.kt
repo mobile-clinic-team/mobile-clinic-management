@@ -1,4 +1,4 @@
-package com.mobileclinic.core.network
+﻿package com.mobileclinic.core.network
 
 import dagger.Module
 import dagger.Provides
@@ -9,13 +9,13 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 object ApiConfig {
     // 10.0.2.2 maps to host localhost (laptop) when running on Android Emulator.
-    // For physical devices on same Wi-Fi, change to host IP (e.g. http://192.168.1.x:3000/).
+    // For physical devices on same Wi-Fi, replace with your machine IP: http://192.168.x.x:3000/
     const val BASE_URL = "http://10.0.2.2:3000/"
 }
 
@@ -23,7 +23,7 @@ object ApiConfig {
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private val jsonConfig = Json {
+    private val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
     }
@@ -35,11 +35,8 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
-            // NEVER log BODY in release builds - request/response bodies
-            // contain JWTs and PII. Swap based on BuildConfig.DEBUG.
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = HttpLoggingInterceptor.Level.BODY
         }
-
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(logging)
@@ -53,11 +50,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl(ApiConfig.BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(jsonConfig.asConverterFactory(contentType))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 }
