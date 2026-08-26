@@ -48,12 +48,31 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    
+    implementation("androidx.compose.ui:ui-tooling")
+
+    // Navigation Compose — cross-feature routing + URI deep links
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
     // Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    
+
+    // kotlinx.serialization (converter used by NetworkModule)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+
+    // ZXing Core — QR Code bitmap generation (no Activity dependency)
+    implementation("com.google.zxing:core:3.5.3")
+
+    // Hilt — Dependency Injection
+    implementation("com.google.dagger:hilt-android:2.51")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Lifecycle ViewModel Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
     // Encrypted SharedPreferences for JWT security
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 }
