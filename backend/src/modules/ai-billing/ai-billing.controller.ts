@@ -1,4 +1,4 @@
-﻿// =====================================================================
+// =====================================================================
 // Module:  M1 - AI Assistant & Billing
 // File:    ai-billing.controller.ts
 // =====================================================================
@@ -81,12 +81,14 @@ export class AiBillingController {
   handlePaymentWebhook = async (req: Request, res: Response): Promise<void> => {
     const signature = (
       req.headers['x-signature'] ||
+      req.headers['x-payment-signature'] ||
       req.headers['x-webhook-signature'] ||
       req.headers['x-hub-signature-256']
     ) as string | undefined;
 
     const timestamp = (
       req.headers['x-timestamp'] ||
+      req.headers['x-payment-timestamp'] ||
       req.body?.timestamp
     ) as string | number | undefined;
 
