@@ -62,17 +62,18 @@ import com.mobileclinic.core.ui.UiState
 import com.mobileclinic.feature.clinical.data.model.LabResultDto
 import com.mobileclinic.feature.clinical.data.model.MedicalRecordDetailDto
 import com.mobileclinic.feature.clinical.data.model.MedicalRecordVersionDto
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mobileclinic.feature.clinical.data.model.PrescriptionDto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientMedicalRecordDetailScreen(
-    recordId: Int,
-    viewModel: PatientMedicalRecordDetailViewModel,
+    recordId: Long,
     onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
     onNavigateToAmend: ((Int) -> Unit)? = null,
     isDoctorRole: Boolean = false,
-    modifier: Modifier = Modifier,
+    viewModel: PatientMedicalRecordDetailViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -83,7 +84,7 @@ fun PatientMedicalRecordDetailScreen(
     val tabTitles = listOf("Tổng quan", "Lịch sử đính chính", "Đơn thuốc", "Xét nghiệm (S3)")
 
     LaunchedEffect(recordId) {
-        viewModel.loadRecord(recordId)
+        viewModel.loadRecord(recordId.toInt())
     }
 
     LaunchedEffect(Unit) {
