@@ -1,0 +1,78 @@
+﻿openapi: 3.0.1
+info:
+  title: Mobile Clinic AI Doctor Recommendation API
+  description: Custom Tool for Dify platform to query and recommend available doctors by department specialty.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local Backend Server
+  - url: https://api.mobileclinic.example.com/api
+    description: Production Backend Gateway
+paths:
+  /ai/recommend-doctors:
+    get:
+      summary: Recommend available doctors by department
+      description: Fetches a list of highly-rated, active doctors matching the requested department specialty name.
+      operationId: recommend_doctors
+      parameters:
+        - name: department
+          in: query
+          required: true
+          description: Name of the medical department/specialty (e.g., "Khoa Tim Mạch", "Khoa Da Liễu", "Khoa Nội Tổng Quát", "Khoa Hô Hấp", "Khoa Cơ Xương Khớp", "Khoa Tai Mũi Họng", "Khoa Nhi", "Khoa Sản Phụ Khoa").
+          schema:
+            type: string
+            example: "Khoa Tim Mạch"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of doctor recommendations to return (default is 5).
+          schema:
+            type: integer
+            default: 5
+            example: 3
+        - name: X-Internal-Api-Key
+          in: header
+          required: true
+          description: Internal service secret key for server-to-server authorization between Dify and Mobile Clinic Backend.
+          schema:
+            type: string
+            example: "dev-internal-service-secret-key-32ch"
+      responses:
+        '200':
+          description: List of recommended doctors successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "BS. CKI Nguyễn Văn A"
+                        specialty:
+                          type: string
+                          example: "Khoa Tim Mạch"
+                        rating:
+                          type: number
+                          example: 4.8
+                        consultationFee:
+                          type: integer
+                          example: 300000
+                        nextAvailableTime:
+                          type: string
+                          nullable: true
+                          example: "2026-08-27T08:00:00.000Z"
+        '400':
+          description: Missing or invalid department parameter.
+        '401':
+          description: Unauthorized internal service call.
