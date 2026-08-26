@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 object ApiConfig {
-    // Backend acts as the sole AI/data gateway (CLAUDE.md #1) - mobile
-    // only ever talks to this base URL, never directly to Dify/Gemini/S3.
-    const val BASE_URL = "https://api.mobileclinic.example.com/"
+    // 10.0.2.2 maps to host localhost (laptop) when running on Android Emulator.
+    // For physical devices on same Wi-Fi, change to host IP (e.g. http://192.168.1.x:3000/).
+    const val BASE_URL = "http://10.0.2.2:3000/"
 }
 
 @Module
