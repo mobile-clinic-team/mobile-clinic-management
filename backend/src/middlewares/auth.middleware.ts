@@ -47,6 +47,33 @@ export function authenticate(
 }
 
 /**
+ * Optional authentication middleware: if token is present, verifies and sets req.user.
+ * If token is absent or invalid, proceeds without error (guest user).
+ */
+export function optionalAuthenticate(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) {
+  const header = req.headers.authorization;
+
+  if (!header || !header.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = header.slice('Bearer '.length).trim();
+
+  try {
+    const payload = verifyAccessToken(token);
+    req.user = payload;
+  } catch (_err) {
+    // Continue as guest
+  }
+
+  return next();
+}
+
+/**
  * RBAC guard. Must run after `authenticate`.
  * Usage: router.delete('/:id', authenticate, authorize('admin'), controller.remove)
  */
