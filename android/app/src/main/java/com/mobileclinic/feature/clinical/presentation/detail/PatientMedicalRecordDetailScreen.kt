@@ -116,7 +116,7 @@ fun PatientMedicalRecordDetailScreen(
                 },
                 actions = {
                     if (isDoctorRole && onNavigateToAmend != null) {
-                        IconButton(onClick = { onNavigateToAmend(recordId) }) {
+                        IconButton(onClick = { onNavigateToAmend(recordId.toInt()) }) {
                             Icon(
                                 imageVector = Icons.Default.EditNote,
                                 contentDescription = "Đính chính bệnh án",
@@ -199,7 +199,7 @@ fun PatientMedicalRecordDetailScreen(
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyLarge,
                         )
-                        Button(onClick = { viewModel.loadRecord(recordId) }) {
+                        Button(onClick = { viewModel.loadRecord(recordId.toInt()) }) {
                             Text("Thử lại")
                         }
                     }

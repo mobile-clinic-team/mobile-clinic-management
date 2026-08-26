@@ -7,6 +7,7 @@ import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +20,9 @@ import javax.inject.Singleton
  * backed by the Keystore.
  */
 @Singleton
-class TokenManager @Inject constructor(context: Context) {
+class TokenManager @Inject constructor(
+    @ApplicationContext context: Context,
+) {
 
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
