@@ -1,4 +1,4 @@
-﻿package com.mobileclinic.core.network
+package com.mobileclinic.core.network
 
 import dagger.Module
 import dagger.Provides
@@ -9,21 +9,21 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 object ApiConfig {
-    // 10.0.2.2 maps to host localhost (laptop) when running on Android Emulator.
-    // For physical devices on same Wi-Fi, replace with your machine IP: http://192.168.x.x:3000/
-    const val BASE_URL = "http://10.0.2.2:3000/"
+    // Backend acts as the sole AI/data gateway (CLAUDE.md #1) - mobile
+    // only ever talks to this base URL, never directly to Dify/Gemini/S3.
+    const val BASE_URL = "https://api.mobileclinic.example.com/"
 }
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private val json = Json {
+    private val jsonConfig = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
     }
@@ -35,8 +35,11 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            // NEVER log BODY in release builds - request/response bodies
+            // contain JWTs and PII. Swap based on BuildConfig.DEBUG.
+            level = HttpLoggingInterceptor.Level.BASIC
         }
+
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(logging)
@@ -50,10 +53,11 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl(ApiConfig.BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(jsonConfig.asConverterFactory(contentType))
             .build()
     }
 }
