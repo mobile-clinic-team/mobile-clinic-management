@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mobileclinic.core.designsystem.MobileClinicTheme
+import com.mobileclinic.core.security.TokenManager
 import com.mobileclinic.feature.aibilling.presentation.chat.AiChatScreen
 import com.mobileclinic.feature.aibilling.presentation.invoice.InvoiceDetailScreen
 import com.mobileclinic.feature.aibilling.presentation.invoice.InvoiceListScreen
@@ -20,12 +21,17 @@ import com.mobileclinic.feature.appointment.presentation.list.AppointmentListScr
 import com.mobileclinic.feature.clinical.presentation.detail.PatientMedicalRecordDetailScreen
 import com.mobileclinic.feature.doctorops.presentation.doctorlist.DoctorListScreen
 import com.mobileclinic.feature.doctorops.presentation.rating.RatingSubmissionScreen
+import com.mobileclinic.feature.patient.presentation.login.LoginScreen
+import com.mobileclinic.feature.patient.presentation.register.RegisterScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Single-Activity host for all Compose destinations across 4 modules.
  *
  * Route contracts:
+ *   "login"                                              -> LoginScreen (auth gate)
+ *   "register"                                           -> RegisterScreen (auth gate)
  *   "chat"                                               -> AiChatScreen (M1)
  *   "invoices"                                           -> InvoiceListScreen (M1)
  *   "invoice/{invoiceId}"                                -> InvoiceDetailScreen (M1)
@@ -38,17 +44,48 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MobileClinicTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
+                    // Start at login if no access token, otherwise go directly to chat
+                    val start = if (tokenManager.getAccessToken() != null) "chat" else "login"
 
                     NavHost(
                         navController = navController,
-                        startDestination = "chat",
+                        startDestination = start,
                     ) {
+                        // ── Auth ──────────────────────────────────────────────
+                        composable("login") {
+                            LoginScreen(
+                                onLoginSuccess = {
+                                    navController.navigate("chat") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToRegister = {
+                                    navController.navigate("register")
+                                },
+                            )
+                        }
+
+                        composable("register") {
+                            RegisterScreen(
+                                onRegisterSuccess = {
+                                    navController.navigate("chat") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToLogin = { navController.popBackStack() },
+                            )
+                        }
+
                         // ── M1: AI Chat Assistant ─────────────────────────────
                         composable("chat") {
                             AiChatScreen(
@@ -58,6 +95,7 @@ class MainActivity : ComponentActivity() {
                                 onNavigateBack = { navController.popBackStack() },
                             )
                         }
+
 
                         // ── M1: Invoices ──────────────────────────────────────
                         composable("invoices") {

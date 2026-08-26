@@ -1,9 +1,9 @@
-﻿// =====================================================================
+// =====================================================================
 // Module:  M1 - AI Assistant & Billing
 // File:    ai-billing.routes.ts
 // =====================================================================
 import { Router } from 'express';
-import { authenticate, authorize } from '../../middlewares/auth.middleware';
+import { authenticate, authorize, optionalAuthenticate } from '../../middlewares/auth.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { aiBillingController } from './ai-billing.controller';
@@ -20,10 +20,6 @@ const router = Router();
 // AI Gateway & Medical Consultation Chatbot
 // =====================================================================
 
-/**
- * POST /api/ai/chat
- * Medical consultation gateway to Dify platform.
- */
 router.post(
   '/ai/chat',
   authenticate,
