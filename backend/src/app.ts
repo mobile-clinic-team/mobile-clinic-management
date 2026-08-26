@@ -15,6 +15,31 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
+  // --- Root & System Health Check ----------------------------------
+  app.get('/', (_req, res) => {
+    res.json({
+      success: true,
+      message: '🏥 Mobile Clinic Management System API is Running!',
+      version: '1.0.0',
+      status: 'HEALTHY',
+      endpoints: {
+        auth: '/api/auth (Login, Register)',
+        patients: '/api/patients (Profile)',
+        ai_assistant: '/api/ai/chat (Dify AI Gateway)',
+        invoices: '/api/invoices (Billing & QR Payment)',
+        appointments: '/api/appointments (Booking Engine)',
+        doctors: '/api/doctors (Doctor Ops & Shifts)',
+        departments: '/api/departments (Master Data)',
+        clinical: '/api/clinical/records (EMR & Presigned S3)',
+        webhooks: '/api/webhooks/payment (Secure Webhook)',
+      },
+    });
+  });
+
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'UP', timestamp: new Date().toISOString() });
+  });
+
   // --- M1: Patient & Identity ---------------------------------------
   app.use('/api', patientIdentityRouter);
 

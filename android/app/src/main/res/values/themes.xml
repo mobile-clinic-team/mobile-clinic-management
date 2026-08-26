@@ -1,0 +1,3 @@
+﻿<resources>
+    <style name="Theme.MobileClinic" parent="android:Theme.Material.NoActionBar" />
+</resources>

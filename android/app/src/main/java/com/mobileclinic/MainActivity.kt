@@ -1,4 +1,4 @@
-﻿package com.mobileclinic
+package com.mobileclinic
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -162,13 +162,9 @@ class MainActivity : ComponentActivity() {
                                 navArgument("appointmentId") { type = NavType.LongType; defaultValue = 0L },
                                 navArgument("doctorId") { type = NavType.LongType; defaultValue = 0L },
                             ),
-                        ) { backStack ->
-                            val doctorId = backStack.arguments?.getLong("doctorId") ?: 0L
-                            val appointmentId = backStack.arguments?.getLong("appointmentId") ?: 0L
+                        ) { _ ->
                             RatingSubmissionScreen(
-                                doctorId = doctorId,
-                                appointmentId = appointmentId,
-                                onRatingSubmitted = { navController.popBackStack() },
+                                onSubmitSuccess = { navController.popBackStack() },
                                 onNavigateBack = { navController.popBackStack() },
                             )
                         }

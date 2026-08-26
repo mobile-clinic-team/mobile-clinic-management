@@ -29,7 +29,7 @@ class DoctorOpsRepository @Inject constructor(
 
     fun getCurrentUserRole(): String? = tokenManager.getRole()
 
-    fun getCurrentUserId(): Long? = tokenManager.getUserId()
+    fun getCurrentUserId(): Long? = tokenManager.getUserId()?.toLong()
 
     fun isDoctor(): Boolean = getCurrentUserRole().equals("doctor", ignoreCase = true)
 

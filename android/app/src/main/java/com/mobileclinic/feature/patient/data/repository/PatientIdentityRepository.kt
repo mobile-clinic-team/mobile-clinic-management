@@ -134,7 +134,7 @@ class PatientIdentityRepository @Inject constructor(
     private fun parseErrorBody(errorBody: ResponseBody?): com.mobileclinic.core.network.ApiErrorBody? {
         val raw = errorBody?.string() ?: return null
         return try {
-            json.decodeFromString(ApiEnvelope.serializer(Unit.serializer()), raw).error
+            json.decodeFromString<com.mobileclinic.core.network.ApiEnvelope<String>>(raw).error
         } catch (e: Exception) {
             null
         }

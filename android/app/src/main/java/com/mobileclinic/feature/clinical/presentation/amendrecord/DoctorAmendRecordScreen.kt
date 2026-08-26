@@ -43,14 +43,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mobileclinic.core.ui.UiState
 
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorAmendRecordScreen(
     recordId: Int,
-    viewModel: DoctorAmendRecordViewModel,
     onNavigateBack: () -> Unit,
     onAmendmentSuccess: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: DoctorAmendRecordViewModel = hiltViewModel(),
 ) {
     val recordState by viewModel.recordState.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
