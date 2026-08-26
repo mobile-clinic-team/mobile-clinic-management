@@ -1,0 +1,13 @@
+﻿#!/usr/bin/env sh
+DIRNAME=`dirname "$0"`
+APP_HOME=`cd "$DIRNAME" ; pwd`
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+JAVA_EXE=java
+if ! command -v java &>/dev/null; then
+  echo "ERROR: JAVA_HOME is not set"
+  exit 1
+fi
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+exec "$JAVA_EXE" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
