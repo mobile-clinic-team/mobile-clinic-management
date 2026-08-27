@@ -1,6 +1,7 @@
-import express from 'express';
+import express, { Request } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import { env } from './config/env';
 import { patientIdentityRouter } from './modules/patient-identity/patient-identity.routes';
 import { appointmentRouter } from './modules/appointment/appointment.routes';
 import doctorOpsRouter from './modules/doctor-ops/doctor-ops.routes';
@@ -12,8 +13,22 @@ export function createApp() {
   const app = express();
 
   app.use(helmet());
-  app.use(cors());
-  app.use(express.json());
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Non-browser clients (mobile apps, health checks) have no Origin.
+      if (!origin || env.corsOrigins.length === 0 || env.corsOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin is not allowed by CORS'));
+      }
+    },
+  }));
+  app.use(express.json({
+    limit: '1mb',
+    verify: (req, _res, buf) => {
+      (req as Request).rawBody = buf.toString('utf8');
+    },
+  }));
 
   // --- Root & System Health Check ----------------------------------
   app.get('/', (_req, res) => {

@@ -13,13 +13,26 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/mobile_clinic
-      JWT_ACCESS_SECRET: prod-jwt-access-secret-32-characters
-      JWT_REFRESH_SECRET: prod-jwt-refresh-secret-32-characters
-      PAYMENT_WEBHOOK_SECRET: dev-payment-webhook-secret-key-32ch
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?set PAYMENT_WEBHOOK_SECRET}
+      INTERNAL_SERVICE_API_KEY: ${INTERNAL_SERVICE_API_KEY:?set INTERNAL_SERVICE_API_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:?set AWS_S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?set AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?set AWS_SECRET_ACCESS_KEY}
+      DIFY_API_KEY: ${DIFY_API_KEY:?set DIFY_API_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   # ── PostgreSQL 16 Primary Database ────────────────────────────────────
   postgres:
@@ -29,12 +42,17 @@ services:
     environment:
       POSTGRES_DB: mobile_clinic
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mobile_clinic"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ── Redis 7 In-Memory Cache & Session ─────────────────────────────────
   redis:
@@ -45,6 +63,11 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

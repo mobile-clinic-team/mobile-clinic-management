@@ -19,20 +19,15 @@
 // as an [ARCH-CHANGE] so all modules reuse the same mechanism.
 // =====================================================================
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { AppError } from '../../../utils/AppError';
-
-const INTERNAL_API_KEY = process.env.INTERNAL_SERVICE_API_KEY;
+import { env } from '../../../config/env';
 
 export function verifyInternalService(req: Request, _res: Response, next: NextFunction): void {
-  if (!INTERNAL_API_KEY) {
-    // Fail closed: never allow this endpoint to run "open" because an
-    // operator forgot to set the secret.
-    next(new AppError(500, 'INTERNAL_KEY_NOT_CONFIGURED', 'INTERNAL_SERVICE_API_KEY is not configured'));
-    return;
-  }
-
   const provided = req.header('X-Internal-Api-Key');
-  if (!provided || provided !== INTERNAL_API_KEY) {
+  const isValid = Boolean(provided) && provided!.length === env.internalServiceApiKey.length &&
+    crypto.timingSafeEqual(Buffer.from(provided!), Buffer.from(env.internalServiceApiKey));
+  if (!isValid) {
     next(new AppError(401, 'UNAUTHORIZED_INTERNAL_CALL', 'Missing or invalid internal service credentials'));
     return;
   }

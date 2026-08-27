@@ -92,7 +92,7 @@ export class AiBillingController {
       req.body?.timestamp
     ) as string | number | undefined;
 
-    const rawBody = (req as any).rawBody || (typeof req.body === 'string' ? req.body : undefined);
+    const rawBody = req.rawBody || (typeof req.body === 'string' ? req.body : undefined);
 
     const result = await this.service.handlePaymentWebhook(req.body, signature, timestamp, rawBody);
     res.status(200).json(result);
